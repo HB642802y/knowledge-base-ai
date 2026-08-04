@@ -1,0 +1,8 @@
+# BEGIN TOKENOPTIPY MCP (managed by TokenOptiPy VS Code)
+[mcp_servers.tokenoptipy]
+command = "python"
+args = ["-m", "tokenoptipy.mcp_server"]
+startup_timeout_sec = 20
+tool_timeout_sec = 120
+env = { TOKENOPTIPY_WORKSPACE_ROOT = "e:\\knowledge-base-ai", TOKENOPTIPY_TRACE_FILE = "e:\\knowledge-base-ai\\.tokenoptipy\\trace.jsonl", PYTHONUTF8 = "1", PYTHONUNBUFFERED = "1" }
+# END TOKENOPTIPY MCP
