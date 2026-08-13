@@ -31,7 +31,10 @@ _load_env_file()
 
 
 class Settings:
-    PROJECT_NAME: str = os.getenv("PROJECT_NAME", "SDSI Knowledge Base")
+    PROJECT_NAME: str = os.getenv(
+        "PROJECT_NAME",
+        "MAPMDREF — Base de connaissances",
+    )
     API_V1_STR: str = os.getenv("API_V1_STR", "/api/v1")
     SECRET_KEY: str = os.getenv("SECRET_KEY", "dev-secret-key")
 
@@ -44,6 +47,9 @@ class Settings:
         "OPENAI_API_KEY",
         ""
     )
+
+    GROQ_API_KEY: str = os.getenv("GROQ_API_KEY", "")
+    GROQ_MODEL: str = os.getenv("GROQ_MODEL", "llama-3.3-70b-versatile")
 
     ALLOWED_ORIGINS: List[str] = [
         origin.strip()

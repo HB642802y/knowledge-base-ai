@@ -39,5 +39,16 @@ class SkillsAgent:
             print(f"Erreur SkillsAgent.add_document: {exc}")
             return False
 
+    def add_text(self, text: str, doc_id: str, metadata: dict | None = None) -> bool:
+        if not self.is_available or self.rag_pipeline is None:
+            return False
+
+        try:
+            self.rag_pipeline.add_text(text=text, doc_id=doc_id, metadata=metadata)
+            return True
+        except Exception as exc:
+            print(f"Erreur SkillsAgent.add_text: {exc}")
+            return False
+
     def is_healthy(self) -> bool:
         return self.is_available

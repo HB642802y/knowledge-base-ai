@@ -37,6 +37,31 @@ class RAGPipeline:
 
         self.vector_store.add(ids, texts, embeddings, metadatas)
 
+    def add_text(self, text: str, doc_id: str, metadata: dict | None = None) -> None:
+        """Indexe un texte libre (ex. paire question/réponse du forum)."""
+        meta = metadata or {}
+        # DocumentLoader attend des fichiers ; on découpe le texte directement.
+        from langchain_core.documents import Document
+
+        documents = [Document(page_content=text, metadata=meta)]
+        chunks = self.splitter.split(documents)
+
+        ids = []
+        texts = []
+        embeddings = []
+        metadatas = []
+
+        for i, chunk in enumerate(chunks):
+            ids.append(f"{doc_id}_{i}")
+            texts.append(chunk.page_content)
+            embeddings.append(self.embedding_model.embed(chunk.page_content))
+            chunk_meta = dict(chunk.metadata or {})
+            chunk_meta.update(meta)
+            metadatas.append(chunk_meta)
+
+        if ids:
+            self.vector_store.add(ids, texts, embeddings, metadatas)
+
     def query(self, question: str) -> str:
         results = self.retriever.retrieve(question, top_k=3)
         context = [result['text'] for result in results]

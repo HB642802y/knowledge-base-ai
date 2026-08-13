@@ -26,6 +26,14 @@
   }
 
   .card-surface {
-    @apply rounded-lg border border-slate-200/80 bg-white/90 shadow-sm backdrop-blur-sm;
+    @apply rounded-xl border border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-sm;
+  }
+
+  .page-title {
+    @apply font-display text-2xl font-semibold tracking-tight text-slate-800;
+  }
+
+  .page-subtitle {
+    @apply mt-1 text-sm text-slate-500;
   }
 }

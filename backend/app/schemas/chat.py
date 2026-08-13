@@ -11,5 +11,14 @@ class SourceDocument(BaseModel):
 
 
 class ChatResponse(BaseModel):
-    answer: str
+    """Trois réponses : documents + forum + assistant IA."""
+
+    document_answer: str
+    document_sources: List[SourceDocument] = []
+    forum_answer: str
+    forum_sources: List[SourceDocument] = []
+    ai_answer: str
+    ai_sources: List[SourceDocument] = []
+    # Compat
+    answer: str = ""
     sources: List[SourceDocument] = []
