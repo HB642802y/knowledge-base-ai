@@ -1,136 +1,126 @@
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import ChatBox from "../components/ChatBox";
-import { askQuestion } from "../services/chat";
+import { addChatComment, createChatQuestion, listChatQuestions } from "../services/chat";
 
-function Sources({ items }) {
-  if (!items?.length) return null;
-  return (
-    <ul className="mt-3 space-y-1 border-t border-slate-200/80 pt-2 text-xs text-slate-500">
-      <li className="font-semibold text-slate-600">Sources</li>
-      {items.map((src, i) => (
-        <li key={`${src.filename}-${i}`}>• {src.filename}</li>
-      ))}
-    </ul>
-  );
+function formatDate(value) {
+  return new Date(value).toLocaleString("fr-FR", { dateStyle: "medium", timeStyle: "short" });
 }
 
-function AnswerCard({ title, badgeClass, content, sources }) {
-  return (
-    <div className="rounded-lg border border-slate-200 bg-white px-4 py-3 text-sm leading-relaxed text-slate-800">
-      <p className={`mb-2 inline-block rounded px-2 py-0.5 text-xs font-semibold ${badgeClass}`}>
-        {title}
-      </p>
-      <p className="whitespace-pre-wrap">{content}</p>
-      <Sources items={sources} />
-    </div>
-  );
-}
+function CommentForm({ questionId, onComment }) {
+  const [body, setBody] = useState("");
+  const [sending, setSending] = useState(false);
 
-export default function Chat() {
-  const [messages, setMessages] = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const handleAsk = async (question) => {
-    setMessages((prev) => [...prev, { role: "user", content: question }]);
-    setLoading(true);
+  const submit = async (event) => {
+    event.preventDefault();
+    const text = body.trim();
+    if (!text || sending) return;
+    setSending(true);
     try {
-      const data = await askQuestion(question);
-      setMessages((prev) => [
-        ...prev,
-        {
-          role: "assistant",
-          document_answer: data.document_answer,
-          document_sources: data.document_sources || [],
-          forum_answer: data.forum_answer,
-          forum_sources: data.forum_sources || [],
-          ai_answer: data.ai_answer,
-          ai_sources: data.ai_sources || [],
-        },
-      ]);
-    } catch (err) {
-      const detail = err.response?.data?.detail || err.message || "Erreur réseau";
-      setMessages((prev) => [
-        ...prev,
-        { role: "assistant", error: true, content: `Impossible d'obtenir une réponse : ${detail}` },
-      ]);
+      await onComment(questionId, text);
+      setBody("");
     } finally {
-      setLoading(false);
+      setSending(false);
     }
   };
 
   return (
-    <div className="flex h-[calc(100vh-8rem)] flex-col">
-      <div className="mb-4">
-        <h1 className="page-title">Assistant</h1>
-        <p className="page-subtitle">
-          Trois réponses : documents téléversés, forum collaboratif, et assistant IA (Groq).
-        </p>
+    <form onSubmit={submit} className="mt-4 flex gap-2 border-t border-slate-100 pt-3">
+      <input className="input-field flex-1" value={body} onChange={(event) => setBody(event.target.value)} placeholder="Écrire un commentaire…" aria-label="Commentaire" disabled={sending} />
+      <button className="btn-secondary" disabled={!body.trim() || sending}>{sending ? "Envoi…" : "Commenter"}</button>
+    </form>
+  );
+}
+
+function QuestionCard({ item, onComment }) {
+  return (
+    <article className="card-surface overflow-hidden">
+      <div className="p-5">
+        <p className="text-sm font-semibold text-slate-800">{item.author_name}</p>
+        <p className="mt-0.5 text-xs text-slate-400">{formatDate(item.created_at)}</p>
+        <p className="mt-3 whitespace-pre-wrap text-base text-slate-700">{item.question}</p>
       </div>
 
-      <div className="card-surface flex min-h-0 flex-1 flex-col">
-        <div className="flex-1 space-y-4 overflow-y-auto p-4">
-          {messages.length === 0 && (
-            <p className="py-12 text-center text-sm text-slate-400">
-              Posez une question ci-dessous.
-            </p>
-          )}
+      <div className="border-y border-sky-100 bg-sky-50/70 p-5">
+        <div className="flex items-center gap-2">
+          <span className="flex h-7 w-7 items-center justify-center rounded-full bg-brand-700 text-xs font-bold text-white">IA</span>
+          <p className="text-sm font-semibold text-brand-800">Réponse de l’assistant IA</p>
+        </div>
+        <p className="mt-3 whitespace-pre-wrap text-sm leading-relaxed text-slate-700">{item.ai_answer}</p>
+        {item.sources?.length > 0 && <p className="mt-3 text-xs text-slate-500">Sources : {item.sources.map((source) => source.filename).join(", ")}</p>}
+      </div>
 
-          {messages.map((msg, index) => {
-            if (msg.role === "user") {
-              return (
-                <div
-                  key={`user-${index}`}
-                  className="ml-auto max-w-3xl rounded-lg bg-brand-600 px-4 py-3 text-sm text-white"
-                >
-                  <p className="whitespace-pre-wrap">{msg.content}</p>
-                </div>
-              );
-            }
-            if (msg.error) {
-              return (
-                <div
-                  key={`err-${index}`}
-                  className="max-w-3xl rounded-lg border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-800"
-                >
-                  {msg.content}
-                </div>
-              );
-            }
-            return (
-              <div key={`asst-${index}`} className="max-w-3xl space-y-3">
-                <AnswerCard
-                  title="Réponse documents"
-                  badgeClass="bg-amber-50 text-amber-900"
-                  content={msg.document_answer}
-                  sources={msg.document_sources}
-                />
-                <AnswerCard
-                  title="Réponse forum"
-                  badgeClass="bg-emerald-50 text-emerald-800"
-                  content={msg.forum_answer}
-                  sources={msg.forum_sources}
-                />
-                <AnswerCard
-                  title="Réponse IA (API)"
-                  badgeClass="bg-sky-50 text-sky-800"
-                  content={msg.ai_answer}
-                  sources={msg.ai_sources}
-                />
+      <div className="p-5">
+        <p className="text-xs font-semibold uppercase tracking-wide text-slate-500">Commentaires des collaborateurs ({item.comments?.length || 0})</p>
+        <div className="mt-3 space-y-3">
+          {item.comments?.map((comment) => (
+            <div key={comment.id} className="rounded-xl bg-slate-100 px-4 py-3">
+              <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-1">
+                <p className="text-sm font-semibold text-slate-800">{comment.author_name}</p>
+                <p className="text-xs text-slate-400">{formatDate(comment.created_at)}</p>
               </div>
-            );
-          })}
-
-          {loading && (
-            <p className="text-sm text-slate-400">
-              Recherche documents + forum + appel API…
-            </p>
-          )}
+              <p className="mt-1 whitespace-pre-wrap text-sm text-slate-700">{comment.body}</p>
+            </div>
+          ))}
+          {!item.comments?.length && <p className="text-sm text-slate-400">Aucun commentaire pour le moment.</p>}
         </div>
-
-        <div className="border-t border-slate-200 p-4">
-          <ChatBox onSubmit={handleAsk} disabled={loading} />
-        </div>
+        <CommentForm questionId={item.id} onComment={onComment} />
       </div>
+    </article>
+  );
+}
+
+export default function Chat() {
+  const [questions, setQuestions] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [sending, setSending] = useState(false);
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    try {
+      setQuestions(await listChatQuestions());
+    } catch (err) {
+      setError(err.response?.data?.detail || "Impossible de charger les échanges.");
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  const handleAsk = async (question) => {
+    setSending(true);
+    setError("");
+    try {
+      const created = await createChatQuestion(question);
+      setQuestions((current) => [created, ...current]);
+    } catch (err) {
+      setError(err.response?.data?.detail || "Impossible d’envoyer la question.");
+    } finally {
+      setSending(false);
+    }
+  };
+
+  const handleComment = async (questionId, body) => {
+    try {
+      const comment = await addChatComment(questionId, body);
+      setQuestions((current) => current.map((item) => item.id === questionId ? { ...item, comments: [...(item.comments || []), comment] } : item));
+    } catch (err) {
+      setError(err.response?.data?.detail || "Impossible de publier le commentaire.");
+    }
+  };
+
+  return (
+    <div className="mx-auto max-w-3xl space-y-5">
+      <div>
+        <h1 className="page-title">Assistant collaboratif</h1>
+        <p className="page-subtitle">Posez une question à l’IA, puis enrichissez la réponse avec les commentaires de vos collègues.</p>
+      </div>
+      <div className="card-surface p-4"><ChatBox onSubmit={handleAsk} disabled={sending} /></div>
+      {error && <p className="rounded-md border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">{error}</p>}
+      {loading && <p className="text-center text-sm text-slate-400">Chargement des échanges…</p>}
+      {!loading && questions.length === 0 && <p className="py-10 text-center text-sm text-slate-400">Soyez le premier à poser une question.</p>}
+      {questions.map((item) => <QuestionCard key={item.id} item={item} onComment={handleComment} />)}
     </div>
   );
 }

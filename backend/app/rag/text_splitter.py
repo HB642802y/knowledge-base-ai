@@ -1,4 +1,4 @@
-from langchain_core.documents import Document
+from .document import Document
 
 
 class TextSplitter:

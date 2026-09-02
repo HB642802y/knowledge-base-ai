@@ -2,38 +2,296 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+  --app-background-image: url("/background-agriculture.png");
+}
+
 @layer base {
+  html {
+    @apply bg-slate-50;
+  }
+
   body {
     min-height: 100vh;
+    @apply text-slate-800 antialiased;
     background:
-      radial-gradient(ellipse 80% 50% at 100% -20%, #d9e6f0 0%, transparent 55%),
-      radial-gradient(ellipse 60% 40% at 0% 100%, #e8eef4 0%, transparent 50%),
+      radial-gradient(ellipse 65% 42% at 100% -12%, rgb(217 230 240 / 78%) 0%, transparent 64%),
+      radial-gradient(ellipse 52% 35% at 0% 100%, rgb(232 238 244 / 78%) 0%, transparent 62%),
       #f8fafc;
+  }
+
+  ::selection {
+    @apply bg-brand-200 text-brand-900;
+  }
+
+  :focus-visible {
+    @apply outline-none ring-2 ring-brand-500 ring-offset-2;
+  }
+
+  button,
+  a,
+  input,
+  textarea,
+  select {
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  textarea {
+    resize: vertical;
   }
 }
 
+/* Direction visuelle inspirée de la maquette : surface sombre, accents indigo/violet. */
+.app-shell {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  background: #0b0f1c;
+  color: #f1f3ff;
+}
+
+.app-ambient {
+  pointer-events: none;
+  position: fixed;
+  z-index: -1;
+  border-radius: 9999px;
+  filter: blur(120px);
+  opacity: .32;
+}
+
+.app-ambient-top { top: -15rem; right: -10rem; height: 32rem; width: 32rem; background: #5b3cc4; }
+.app-ambient-bottom { bottom: -16rem; left: -10rem; height: 28rem; width: 28rem; background: #176b9a; opacity: .2; }
+
+.app-shell .card-surface {
+  border-color: rgb(255 255 255 / .09);
+  background: rgb(24 29 49 / .78);
+  box-shadow: 0 18px 50px -32px rgb(0 0 0 / .9);
+}
+
+.app-shell .text-slate-800,
+.app-shell .text-slate-700 { color: #f1f3ff; }
+.app-shell .text-slate-600 { color: #c1c7db; }
+.app-shell .text-slate-500,
+.app-shell .text-slate-400 { color: #9099b5; }
+.app-shell .border-slate-100,
+.app-shell .border-slate-200,
+.app-shell .border-slate-300 { border-color: rgb(255 255 255 / .09); }
+.app-shell .bg-white,
+.app-shell .bg-white\/95,
+.app-shell .bg-slate-50,
+.app-shell .bg-slate-100 { background-color: rgb(255 255 255 / .06); }
+.app-shell .input-field { border-color: rgb(255 255 255 / .12); background: rgb(9 12 24 / .48); color: #f1f3ff; }
+.app-shell .btn-primary { border: 0; background-image: linear-gradient(135deg, #5368e8, #9b4de5); box-shadow: 0 12px 28px -14px rgb(113 73 226 / .85); }
+.app-shell .btn-secondary { border-color: rgb(255 255 255 / .12); background: rgb(255 255 255 / .06); color: #e9ebf7; }
+.app-shell header { border-color: rgb(255 255 255 / .08); background: rgb(15 19 35 / .72); }
+
 @layer components {
   .btn-primary {
-    @apply inline-flex items-center justify-center rounded-md bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition hover:bg-brand-700 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-10 items-center justify-center rounded-lg bg-brand-600 px-4 py-2 text-sm font-semibold text-white shadow-sm transition duration-200 hover:-translate-y-px hover:bg-brand-700 hover:shadow-md active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:transform-none disabled:opacity-60;
   }
 
   .btn-secondary {
-    @apply inline-flex items-center justify-center rounded-md border border-slate-300 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition hover:bg-slate-50 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-60;
+    @apply inline-flex min-h-10 items-center justify-center rounded-lg border border-slate-200 bg-white px-4 py-2 text-sm font-semibold text-slate-700 shadow-sm transition duration-200 hover:-translate-y-px hover:border-brand-200 hover:bg-brand-50 hover:text-brand-800 hover:shadow-md active:translate-y-0 focus:outline-none focus:ring-2 focus:ring-brand-500 focus:ring-offset-2 disabled:cursor-not-allowed disabled:transform-none disabled:opacity-60;
   }
 
   .input-field {
-    @apply w-full rounded-md border border-slate-300 bg-white px-3 py-2 text-sm text-slate-800 shadow-sm placeholder:text-slate-400 focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-500/30;
+    @apply w-full rounded-lg border border-slate-200 bg-white px-3 py-2.5 text-sm text-slate-800 shadow-sm transition placeholder:text-slate-400 hover:border-slate-300 focus:border-brand-500 focus:outline-none focus:ring-4 focus:ring-brand-500/15;
   }
 
   .card-surface {
-    @apply rounded-xl border border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-sm;
+    @apply rounded-2xl border border-slate-200/80 bg-white/95 shadow-sm backdrop-blur-sm transition-shadow duration-200;
   }
 
   .page-title {
-    @apply font-display text-2xl font-semibold tracking-tight text-slate-800;
+    @apply font-display text-2xl font-bold tracking-tight text-slate-800 sm:text-3xl;
   }
 
   .page-subtitle {
-    @apply mt-1 text-sm text-slate-500;
+    @apply mt-2 max-w-3xl text-sm leading-relaxed text-slate-500;
   }
+
+  .section-label {
+    @apply mb-2 text-xs font-bold uppercase tracking-[0.14em] text-brand-700;
+  }
+
+  .empty-state {
+    @apply card-surface px-6 py-12 text-center text-sm text-slate-500;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}
+
+body {
+  background:
+    linear-gradient(rgb(0 0 0 / .28), rgb(0 0 0 / .38)),
+    var(--app-background-image),
+    #050505 !important;
+  background-attachment: fixed !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  color: #fff;
+}
+
+.app-shell {
+  background:
+    linear-gradient(rgb(0 0 0 / .28), rgb(0 0 0 / .38)),
+    var(--app-background-image),
+    #050505 !important;
+  background-attachment: fixed !important;
+  background-position: center !important;
+  background-repeat: no-repeat !important;
+  background-size: cover !important;
+  color: #fff;
+}
+
+.app-ambient {
+  display: none;
+}
+
+.card-surface,
+.app-shell .card-surface {
+  border-color: rgb(255 255 255 / .18) !important;
+  background: rgb(0 0 0 / .48) !important;
+  box-shadow: 0 18px 50px -32px rgb(255 255 255 / .18) !important;
+}
+
+.text-brand-800,
+.text-brand-700,
+.text-violet-300,
+.text-violet-200,
+.text-sky-900,
+.text-emerald-800,
+.text-amber-900,
+.text-slate-800,
+.text-slate-700,
+.app-shell .text-brand-800,
+.app-shell .text-brand-700,
+.app-shell .text-violet-300,
+.app-shell .text-violet-200,
+.app-shell .text-sky-900,
+.app-shell .text-emerald-800,
+.app-shell .text-amber-900,
+.app-shell .text-slate-800,
+.app-shell .text-slate-700 {
+  color: #fff !important;
+}
+
+.text-slate-600,
+.app-shell .text-slate-600 {
+  color: #e5e5e5 !important;
+}
+
+.text-slate-500,
+.text-slate-400,
+.app-shell .text-slate-500,
+.app-shell .text-slate-400 {
+  color: #b8b8b8 !important;
+}
+
+.border-slate-100,
+.border-slate-200,
+.border-slate-300,
+.border-brand-600,
+.border-violet-300\/20,
+.border-sky-200,
+.border-emerald-200,
+.border-amber-200,
+.app-shell .border-slate-100,
+.app-shell .border-slate-200,
+.app-shell .border-slate-300,
+.app-shell .border-brand-600,
+.app-shell .border-violet-300\/20,
+.app-shell .border-sky-200,
+.app-shell .border-emerald-200,
+.app-shell .border-amber-200 {
+  border-color: rgb(255 255 255 / .18) !important;
+}
+
+.bg-white,
+.bg-white\/95,
+.bg-slate-50,
+.bg-slate-100,
+.bg-sky-50,
+.bg-sky-50\/70,
+.bg-brand-50,
+.bg-emerald-50,
+.bg-amber-50,
+.bg-violet-500\/10,
+.app-shell .bg-white,
+.app-shell .bg-white\/95,
+.app-shell .bg-slate-50,
+.app-shell .bg-slate-100,
+.app-shell .bg-sky-50,
+.app-shell .bg-sky-50\/70,
+.app-shell .bg-brand-50,
+.app-shell .bg-emerald-50,
+.app-shell .bg-amber-50,
+.app-shell .bg-violet-500\/10 {
+  background-color: rgb(255 255 255 / .08) !important;
+}
+
+.input-field,
+.app-shell .input-field {
+  border-color: rgb(255 255 255 / .28) !important;
+  background: rgb(0 0 0 / .58) !important;
+  color: #fff !important;
+}
+
+.input-field::placeholder,
+.app-shell .input-field::placeholder {
+  color: #a3a3a3 !important;
+}
+
+.btn-primary,
+.app-shell .btn-primary {
+  border: 1px solid rgb(255 255 255 / .82) !important;
+  background: #fff !important;
+  color: #000 !important;
+  box-shadow: none !important;
+}
+
+.btn-primary:hover,
+.app-shell .btn-primary:hover {
+  background: #e5e5e5 !important;
+  color: #000 !important;
+}
+
+.btn-secondary,
+.app-shell .btn-secondary {
+  border-color: rgb(255 255 255 / .28) !important;
+  background: rgb(0 0 0 / .54) !important;
+  color: #fff !important;
+}
+
+.btn-secondary:hover,
+.app-shell .btn-secondary:hover {
+  background: rgb(255 255 255 / .12) !important;
+  color: #fff !important;
+}
+
+.app-shell header,
+.app-shell aside {
+  border-color: rgb(255 255 255 / .18) !important;
+  background: rgb(0 0 0 / .56) !important;
+}
+
+.app-shell aside .bg-gradient-to-br,
+.app-shell aside .bg-gradient-to-r {
+  background-image: none !important;
+  background-color: #fff !important;
+  color: #000 !important;
+  box-shadow: none !important;
+}
+
+table thead {
+  background: rgb(255 255 255 / .1) !important;
 }

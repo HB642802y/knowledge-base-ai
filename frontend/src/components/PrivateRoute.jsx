@@ -1,7 +1,7 @@
 import { Navigate } from "react-router-dom";
 import { getCurrentUser, getLocalRole } from "../services/auth";
 
-export default function PrivateRoute({ children, requireAdmin = false }) {
+export default function PrivateRoute({ children, requireAdmin = false, requireCollaborator = false }) {
   const user = getCurrentUser();
 
   if (!user) {
@@ -9,7 +9,11 @@ export default function PrivateRoute({ children, requireAdmin = false }) {
   }
 
   if (requireAdmin && getLocalRole(user) !== "admin") {
-    return <Navigate to="/chat" replace />;
+    return <Navigate to="/collaborateur" replace />;
+  }
+
+  if (requireCollaborator && getLocalRole(user) === "admin") {
+    return <Navigate to="/admin" replace />;
   }
 
   return children;

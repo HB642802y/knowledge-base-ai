@@ -45,6 +45,21 @@ class Settings:
         ""
     )
 
+    INITIAL_ADMIN_EMAIL: str = os.getenv(
+        "INITIAL_ADMIN_EMAIL",
+        "admin@sdsi.com"
+    )
+
+    INITIAL_ADMIN_FULL_NAME: str = os.getenv(
+        "INITIAL_ADMIN_FULL_NAME",
+        "Admin SDSI"
+    )
+
+    INITIAL_ADMIN_PASSWORD: str = os.getenv(
+        "INITIAL_ADMIN_PASSWORD",
+        ""
+    )
+
     ALLOWED_ORIGINS: List[str] = [
         origin.strip()
         for origin in os.getenv("ALLOWED_ORIGINS", "*").split(",")

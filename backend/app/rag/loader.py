@@ -1,9 +1,8 @@
 from pathlib import Path
-from langchain_core.documents import Document
+import xml.etree.ElementTree as ET
+import zipfile
 
-from app.utils.pdf_reader import PDFReader
-from app.utils.docx_reader import DocxReader
-from app.utils.excel_reader import ExcelReader
+from .document import Document
 
 
 class DocumentLoader:
@@ -18,13 +17,22 @@ class DocumentLoader:
         extension = path.suffix.lower()
 
         if extension == ".pdf":
+            from app.utils.pdf_reader import PDFReader
+
             text = PDFReader(path).read()
 
         elif extension == ".docx":
+            from app.utils.docx_reader import DocxReader
+
             text = DocxReader(path).read()
 
         elif extension in [".xlsx", ".xls"]:
+            from app.utils.excel_reader import ExcelReader
+
             text = ExcelReader(path).read()
+
+        elif extension == ".pptx":
+            text = self._read_pptx(path)
 
         elif extension == ".txt":
             text = path.read_text(encoding="utf-8")
@@ -36,3 +44,25 @@ class DocumentLoader:
         document = Document(page_content=text, metadata={"source": str(path)})
 
         return [document]
+
+    def _read_pptx(self, path: Path) -> str:
+        texts = []
+        namespace = {"a": "http://schemas.openxmlformats.org/drawingml/2006/main"}
+
+        with zipfile.ZipFile(path) as archive:
+            slide_names = sorted(
+                name
+                for name in archive.namelist()
+                if name.startswith("ppt/slides/slide") and name.endswith(".xml")
+            )
+            for slide_name in slide_names:
+                root = ET.fromstring(archive.read(slide_name))
+                slide_text = [
+                    node.text.strip()
+                    for node in root.findall(".//a:t", namespace)
+                    if node.text and node.text.strip()
+                ]
+                if slide_text:
+                    texts.append("\n".join(slide_text))
+
+        return "\n\n".join(texts)

@@ -1,12 +1,12 @@
 import { useState } from "react";
 import { MINISTRY_SHORT } from "../branding";
 
-/** Fichier attendu : frontend/public/logo-ministere.png (idéal : 512×512 px) */
-const LOGO_SRC = "/logo-ministere.png";
+/** Fichier attendu : frontend/public/logo-ministere.svg */
+const LOGO_SRC = "/logo-ministere.svg";
 
 const SIZES = {
-  nav: "h-16 w-16 sm:h-20 sm:w-20",
-  login: "h-28 w-28 sm:h-36 sm:w-36",
+  nav: "h-14 w-40 sm:h-16 sm:w-48",
+  login: "h-28 w-72 sm:h-32 sm:w-96",
 };
 
 const FALLBACK_TEXT = {

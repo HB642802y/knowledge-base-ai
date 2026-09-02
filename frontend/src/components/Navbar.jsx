@@ -1,7 +1,7 @@
 import { Link, NavLink, useNavigate } from "react-router-dom";
 import { APP_NAME, MINISTRY_FULL, MINISTRY_SHORT } from "../branding";
 import MinistryLogo from "./MinistryLogo";
-import { getLocalRole, logout } from "../services/auth";
+import { getHomePath, getLocalRole, logout } from "../services/auth";
 
 const mobileLink = ({ isActive }) =>
   [
@@ -12,16 +12,17 @@ const mobileLink = ({ isActive }) =>
 export default function Navbar({ user }) {
   const navigate = useNavigate();
   const role = getLocalRole(user);
+  const homePath = user ? getHomePath(user) : "/login";
 
   const handleLogout = () => {
     logout();
-    navigate("/login");
+    navigate("/");
   };
 
   return (
     <header className="border-b border-slate-200/80 bg-white/95 backdrop-blur-sm shadow-sm">
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-4 px-4 py-3.5 sm:px-6 lg:px-8">
-        <Link to="/chat" className="min-w-0">
+        <Link to={homePath} className="min-w-0">
           <div className="flex items-center gap-4">
             <MinistryLogo size="nav" />
             <div className="min-w-0 border-l border-slate-200 pl-4">
@@ -54,8 +55,8 @@ export default function Navbar({ user }) {
 
       {user && (
         <nav className="flex gap-1 overflow-x-auto border-t border-slate-100 px-4 py-2 md:hidden">
+          <NavLink to="/collaborateur" className={mobileLink}>Espace</NavLink>
           <NavLink to="/chat" className={mobileLink}>Chat</NavLink>
-          <NavLink to="/forum" className={mobileLink}>Forum</NavLink>
           <NavLink to="/documents" className={mobileLink}>Documents</NavLink>
           <NavLink to="/upload" className={mobileLink}>Upload</NavLink>
           <NavLink to="/settings" className={mobileLink}>Paramètres</NavLink>

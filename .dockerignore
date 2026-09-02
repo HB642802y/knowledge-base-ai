@@ -1,0 +1,12 @@
+.git
+.venv
+backend/.deps
+frontend/node_modules
+frontend/dist
+chroma_db
+documents
+uploads
+*.log
+.env
+.env.*
+!.env.production.example

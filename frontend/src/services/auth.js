@@ -8,6 +8,11 @@ export function getLocalRole(user) {
   return user.email?.toLowerCase() === "admin@sdsi.com" ? "admin" : "collaborateur";
 }
 
+export function getHomePath(user) {
+  // Both roles land on the dashboard. Administration remains available in navigation.
+  return "/collaborateur";
+}
+
 export async function login(email, password) {
   const { data } = await api.post("/auth/login", { email, password });
   const user = {

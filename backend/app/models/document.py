@@ -11,4 +11,7 @@ class Document(Base):
     title = Column(String, nullable=False)
     source = Column(String, nullable=False)
     content = Column(Text, nullable=True)
+    uploaded_by_id = Column(Integer, nullable=True)
+    uploaded_by_name = Column(String, nullable=True)
+    uploaded_by_email = Column(String, nullable=True)
     created_at = Column(DateTime(timezone=True), server_default=func.now())
