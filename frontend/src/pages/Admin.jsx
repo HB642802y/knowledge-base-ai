@@ -1,6 +1,6 @@
 ﻿import { useCallback, useEffect, useRef, useState } from "react";
 import api from "../services/api";
-import { createUser, deleteUser, listUsers } from "../services/users";
+import { createUser, deleteUser, listUsers, resetUserPassword } from "../services/users";
 import { deleteDocument, listDocuments } from "../services/documents";
 import { addChatComment, createChatQuestion, deleteChatQuestion, listChatQuestions } from "../services/chat";
 import UploadForm from "../components/UploadForm";
@@ -84,6 +84,7 @@ function UsersTab({ showToast }) {
   const [email, setEmail] = useState("");
   const [fullName, setFullName] = useState("");
   const [password, setPassword] = useState("");
+  const [passwords, setPasswords] = useState({});
   const [submitting, setSubmitting] = useState(false);
 
   const load = useCallback(async () => {
@@ -110,13 +111,13 @@ function UsersTab({ showToast }) {
         full_name: fullName.trim(),
         password,
       });
-      showToast("Compte collaborateur crÃ©Ã©.");
+      showToast("Compte collaborateur créé.");
       setEmail("");
       setFullName("");
       setPassword("");
       await load();
     } catch (err) {
-      showToast(err.response?.data?.detail || "Ã‰chec de la crÃ©ation.", "error");
+      showToast(err.response?.data?.detail || "Échec de la création.", "error");
     } finally {
       setSubmitting(false);
     }
@@ -126,29 +127,42 @@ function UsersTab({ showToast }) {
     if (!window.confirm("Supprimer cet utilisateur ?")) return;
     try {
       await deleteUser(userId);
-      showToast("Utilisateur supprimÃ©.");
+      showToast("Utilisateur supprimé.");
       await load();
     } catch (err) {
       showToast(err.response?.data?.detail || "Suppression impossible.", "error");
     }
   };
 
+  const handleResetPassword = async (userId) => {
+    const newPassword = (passwords[userId] || "").trim();
+    if (!newPassword) return;
+    try {
+      await resetUserPassword(userId, newPassword);
+      setPasswords((current) => ({ ...current, [userId]: "" }));
+      showToast("Mot de passe collaborateur modifie.");
+    } catch (err) {
+      showToast(err.response?.data?.detail || "Modification impossible.", "error");
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="card-surface overflow-x-auto">
-        <table className="w-full min-w-[640px] text-left text-sm">
+        <table className="w-full min-w-[780px] text-left text-sm">
           <thead className="border-b border-slate-200 bg-slate-50 text-xs uppercase text-slate-500">
             <tr>
               <th className="px-4 py-3">ID</th>
               <th className="px-4 py-3">Email</th>
               <th className="px-4 py-3">Nom</th>
-              <th className="px-4 py-3">RÃ´le</th>
+              <th className="px-4 py-3">Rôle</th>
+              <th className="px-4 py-3">Nouveau mot de passe</th>
               <th className="px-4 py-3"></th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
-              <tr><td colSpan={5} className="px-4 py-6 text-slate-400">Chargementâ€¦</td></tr>
+              <tr><td colSpan={6} className="px-4 py-6 text-slate-400">Chargement...</td></tr>
             ) : (
               users.map((u) => (
                 <tr key={u.id} className="border-b border-slate-100">
@@ -156,6 +170,27 @@ function UsersTab({ showToast }) {
                   <td className="px-4 py-3">{u.email}</td>
                   <td className="px-4 py-3">{u.full_name}</td>
                   <td className="px-4 py-3 capitalize">{u.role}</td>
+                  <td className="px-4 py-3">
+                    {u.role === "collaborateur" && (
+                      <div className="flex min-w-[260px] gap-2">
+                        <input
+                          className="input-field min-h-9 py-1.5 text-xs"
+                          type="text"
+                          placeholder="Nouveau mot de passe"
+                          value={passwords[u.id] || ""}
+                          onChange={(e) => setPasswords((current) => ({ ...current, [u.id]: e.target.value }))}
+                        />
+                        <button
+                          type="button"
+                          onClick={() => handleResetPassword(u.id)}
+                          className="btn-secondary min-h-9 px-3 py-1 text-xs"
+                          disabled={!passwords[u.id]?.trim()}
+                        >
+                          Modifier
+                        </button>
+                      </div>
+                    )}
+                  </td>
                   <td className="px-4 py-3">
                     <button
                       type="button"
@@ -173,12 +208,12 @@ function UsersTab({ showToast }) {
       </div>
 
       <form onSubmit={handleCreate} className="card-surface max-w-lg space-y-3 p-5">
-        <h2 className="font-display text-base font-semibold text-slate-800">CrÃ©er un compte collaborateur</h2>
+        <h2 className="font-display text-base font-semibold text-slate-800">Créer un compte collaborateur</h2>
         <input className="input-field" type="email" placeholder="Email" value={email} onChange={(e) => setEmail(e.target.value)} required />
         <input className="input-field" type="text" placeholder="Nom complet" value={fullName} onChange={(e) => setFullName(e.target.value)} required />
         <input className="input-field" type="text" placeholder="Mot de passe" value={password} onChange={(e) => setPassword(e.target.value)} required minLength={4} />
         <button type="submit" className="btn-primary" disabled={submitting}>
-          {submitting ? "CrÃ©ationâ€¦" : "CrÃ©er le compte collaborateur"}
+          {submitting ? "Création..." : "Créer le compte collaborateur"}
         </button>
       </form>
     </div>
@@ -202,7 +237,7 @@ function StatsTab({ showToast }) {
     })();
   }, [showToast]);
 
-  if (loading) return <p className="text-sm text-slate-400">Chargementâ€¦</p>;
+  if (loading) return <p className="text-sm text-slate-400">Chargement...</p>;
   if (!stats) return null;
 
   const cards = [
@@ -246,7 +281,7 @@ function UploadTab({ showToast }) {
   const handleUploadResult = async (result) => {
     setUploadResult(result);
     if (result?.ok) {
-      showToast(`Document ${result.data.filename} uploadÃ© avec succÃ¨s`);
+      showToast(`Document ${result.data.filename} uploadé avec succès`);
       await loadDocuments();
     }
   };
@@ -487,4 +522,5 @@ function QuestionsTab({ showToast }) {
     </div>
   );
 }
+
 

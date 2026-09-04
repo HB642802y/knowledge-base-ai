@@ -23,6 +23,10 @@ class ProfileUpdate(BaseModel):
     new_password: str | None = Field(default=None, min_length=4)
 
 
+class PasswordReset(BaseModel):
+    password: str = Field(min_length=4)
+
+
 def _role_for_email(email: str) -> str:
     return "admin" if email == "admin@sdsi.com" else "collaborateur"
 
@@ -114,6 +118,33 @@ def delete_user(
         return
 
     raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable.")
+
+
+@router.put("/{user_id}/password")
+def reset_user_password(
+    user_id: int,
+    payload: PasswordReset,
+    x_user_email: str | None = Header(default=None),
+    db: Session = Depends(get_db),
+):
+    admin = admin_user(x_user_email, db)
+    target = db.get(DbUser, user_id)
+    if not target:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Utilisateur introuvable.")
+
+    target_email = target.email.strip().lower()
+    if target_email == admin["email"]:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Utilisez la page parametres pour modifier votre propre mot de passe.",
+        )
+    if _role_for_email(target_email) == "admin":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Un compte administrateur ne peut pas etre modifie ici.")
+
+    target.password_hash = hash_password(payload.password)
+    db.commit()
+    db.refresh(target)
+    return _public_db_user(target)
 
 
 @router.put("/me")

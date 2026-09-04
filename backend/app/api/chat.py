@@ -24,6 +24,7 @@ def date_to_string(value):
 
 
 def serialize_question(conversation: Conversation, db: Session, user: dict | None = None) -> dict:
+    # Récupère les réponses humaines liées à cette question.
     comments = (
         db.query(Message)
         .filter(Message.conversation_id == conversation.id, Message.role == "comment")
@@ -83,6 +84,7 @@ def create_question(
     if not question_text:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="La question est obligatoire.")
 
+    # Envoie la question au pipeline IA/RAG puis stocke la réponse dans la conversation.
     response = service.ask(question_text)
     conversation = Conversation(
         title=question_text,
@@ -133,6 +135,7 @@ def create_comment(
     if not body:
         raise HTTPException(status_code=status.HTTP_422_UNPROCESSABLE_ENTITY, detail="Le commentaire est obligatoire.")
 
+    # Ajoute une réponse humaine sous la question existante.
     comment = Message(
         conversation_id=question.id,
         role="comment",
